@@ -198,36 +198,7 @@ public class SSDPDiscovery: NSObject {
         }
     }
     
-    //
-    // MARK: Private Instance Variables
-    //
-    
-    fileprivate var activeSessions: [Weak<SSDPDiscoverySession>] = []
-//    fileprivate var asyncUdpSocket: GCDAsyncUdpSocket?
-    fileprivate var asyncUdpSocket: SSDPUDPSocket?
-    private var ssdpResponseQueue: DispatchQueue?
-    private var responseQueue: DispatchQueue?
-}
-
-//
-// MARK: - Session management
-//
-
-extension SSDPDiscovery {
-    
-    /// Starts a new session based on an M-SEARCH `request`.
-    ///
-    /// - Parameters:
-    ///     - request: The M-SEARCH request representing the devices to discover
-    ///     - timeout: Time interval to automatically close the session after
-    ///
-    /// - Returns: A new discovery session for the request
-    internal func startSession(request: SSDPMSearchRequest, timeout: TimeInterval? = nil) -> SSDPDiscoverySession {
-        let session = SSDPDiscoverySession(request: request, discovery: self, timeout: timeout)
-        self.activeSessions.append(Weak(session))
-        session.start()
-        return session
-    }
+    //MARK: - Internal functions
     
     /// Sends a single M-SEARCH broadcast over the local area network to discover devices. Sending a request does not guarentee a response
     /// given the unreliablity of UDP.
@@ -251,6 +222,20 @@ extension SSDPDiscovery {
         }
     }
     
+    /// Starts a new session based on an M-SEARCH `request`.
+    ///
+    /// - Parameters:
+    ///     - request: The M-SEARCH request representing the devices to discover
+    ///     - timeout: Time interval to automatically close the session after
+    ///
+    /// - Returns: A new discovery session for the request
+    internal func startSession(request: SSDPMSearchRequest, timeout: TimeInterval? = nil) -> SSDPDiscoverySession {
+        let session = SSDPDiscoverySession(request: request, discovery: self, timeout: timeout)
+        self.activeSessions.append(Weak(session))
+        session.start()
+        return session
+    }
+
     /// Closes a session and removs the association from the discovery. Once all sessions are close the discovery is free to reclaim
     /// the sockets.
     ///
@@ -288,4 +273,15 @@ extension SSDPDiscovery {
     internal func receivedErrorFromSocket(error: Error) {
         os_log(.error, "Received error from socket %@", error.localizedDescription)
     }
+    
+    
+    //
+    // MARK: Private Instance Variables
+    //
+    
+    internal var activeSessions: [Weak<SSDPDiscoverySession>] = []
+//    fileprivate var asyncUdpSocket: GCDAsyncUdpSocket?
+    internal var asyncUdpSocket: SSDPUDPSocket?
+    internal var ssdpResponseQueue: DispatchQueue?
+    internal var responseQueue: DispatchQueue?
 }
